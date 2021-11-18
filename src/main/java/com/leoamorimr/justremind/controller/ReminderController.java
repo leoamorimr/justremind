@@ -1,57 +1,54 @@
 package com.leoamorimr.justremind.controller;
 
-import com.leoamorimr.justremind.dto.ReminderDTO;
 import com.leoamorimr.justremind.model.Reminder;
-import com.leoamorimr.justremind.service.ReminderService;
+import com.leoamorimr.justremind.repository.ReminderRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/justremind")
+@RequestMapping("/justremind")
 public class ReminderController {
 
-    private final ReminderService reminderService;
+    private ReminderRepository repository;
 
-    public ReminderController(ReminderService reminderService) {
-        this.reminderService = reminderService;
+    public ReminderController(ReminderRepository reminderRepository) {
+        this.repository = reminderRepository;
     }
 
-    @GetMapping()
+    @GetMapping("/api/justremind")
     public List<Reminder> findAll() {
-        return reminderService.findAllReminders();
+        return repository.findAll();
     }
 
-    @GetMapping(path = "/{id}")
-    public ResponseEntity<?> findReminder(@PathVariable Long id) {
-        return reminderService.findReminder(id).map(reminder -> ResponseEntity.ok().body(reminder)).orElse(ResponseEntity.notFound().build());
+    @GetMapping(path = "/api/justremind/{id}")
+    public ResponseEntity findReminder(@PathVariable Long id) {
+        return repository.findById(id).map(reminder -> ResponseEntity.ok().body(reminder)).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<?> createReminder(@Valid @RequestBody ReminderDTO reminderDTO) {
-        Reminder reminder = reminderService.fromDTO(reminderDTO);
-        reminder = reminderService.create(reminder);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(reminderDTO.getId()).toUri();
-        return ResponseEntity.created(uri).build();
+    @PostMapping("/api/justremind")
+    public Reminder createReminder(@Valid @RequestBody Reminder reminder) {
+        return repository.save(reminder);
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteReminder(@PathVariable Long id) {
-        reminderService.delete(id);
-        return ResponseEntity.noContent().build();
+    @PutMapping("/api/justremind/{id}")
+    public ResponseEntity updateReminder(@Valid @PathVariable Long id, @RequestBody Reminder reminder) {
+        return repository.findById(id).map(record -> {
+            record.setSubject(reminder.getSubject());
+            record.setContent(reminder.getContent());
+            Reminder updated = repository.save(record);
+            return ResponseEntity.ok().body(updated);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "{id}")
-    public ResponseEntity<Void> updateReminder(@Valid @PathVariable Long id, @RequestBody ReminderDTO reminderDTO) {
-        Reminder reminder = reminderService.fromDTO(reminderDTO);
-        reminder.setId(id);
-        reminderService.update(reminder);
-
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/api/justremind/{id}")
+    public ResponseEntity deleteReminder(@PathVariable Long id) {
+        return repository.findById(id).map(record -> {
+            repository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 
 }

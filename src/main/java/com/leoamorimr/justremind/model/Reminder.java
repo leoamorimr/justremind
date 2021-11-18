@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
 @AllArgsConstructor
@@ -19,9 +20,11 @@ public class Reminder {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "pk_sequence")
     private Long id;
 
-    @NotEmpty
+    @NotEmpty(message = "Subject is mandatory")
+    @NotBlank(message = "Subject is mandatory")
     private String subject;
 
-    @NotEmpty
+    @NotEmpty(message = "Content is mandatory")
+    @NotBlank(message = "Content is mandatory")
     private String content;
 }
