@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/justremind")
+@RequestMapping("/justremind/api/")
 public class ReminderController {
 
     private ReminderRepository repository;
@@ -18,22 +18,22 @@ public class ReminderController {
         this.repository = reminderRepository;
     }
 
-    @GetMapping("/api/justremind")
+    @GetMapping()
     public List<Reminder> findAll() {
         return repository.findAll();
     }
 
-    @GetMapping(path = "/api/justremind/{id}")
+    @GetMapping(path = "{id}")
     public ResponseEntity findReminder(@PathVariable Long id) {
         return repository.findById(id).map(reminder -> ResponseEntity.ok().body(reminder)).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/api/justremind")
+    @PostMapping("")
     public Reminder createReminder(@Valid @RequestBody Reminder reminder) {
         return repository.save(reminder);
     }
 
-    @PutMapping("/api/justremind/{id}")
+    @PutMapping("{id}")
     public ResponseEntity updateReminder(@Valid @PathVariable Long id, @RequestBody Reminder reminder) {
         return repository.findById(id).map(record -> {
             record.setSubject(reminder.getSubject());
@@ -43,7 +43,7 @@ public class ReminderController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/api/justremind/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity deleteReminder(@PathVariable Long id) {
         return repository.findById(id).map(record -> {
             repository.deleteById(id);
